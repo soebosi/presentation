@@ -16,7 +16,7 @@
 <h2 id="%E3%81%93%E3%81%AE%E7%99%BA%E8%A1%A8%E3%81%AE%E7%B5%8C%E7%B7%AF">この発表の経緯</h2>
 <ul>
 <li>雑談をしていたときに C 言語の <code>printf</code> の仕様で盛り上がった</li>
-<li>言語ごとに <code>printf</code> 的なデバッグプリントに対するアプローチが違っていて、まとめたら結構面白いのでは？</li>
+<li>言語ごとに <code>printf</code> 的な文字列のフォーマット処理に対するアプローチが違っていて、まとめたら結構面白いのでは？</li>
 <li>そういえば 7 つの言語 7 つの世界っていう本あったから、それ文字ってしまう？</li>
 <li>という感じで、タイトル先行で資料を作成した</li>
 </ul>
@@ -103,7 +103,7 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
 <h3 id="%E4%BD%95%E3%81%8C%E8%B5%B7%E3%81%8D%E3%81%9F%E3%81%AE%E3%81%8B">何が起きたのか？</h3>
 <ul>
-<li>大前提、関数呼び出しをする場合、引数の情報をスタックメモリにつめて関数を呼び出している（ヒープメモリではない）</li>
+<li>大前提、関数呼び出しをする場合、引数の情報をスタックメモリにつめて関数を呼び出している</li>
 <li>C 言語の可変長引数でやっていることは関数の引数がスタックされていると思われるメモリを読みにいくこと
 <ul>
 <li>参考: <a href="https://qiita.com/subaruf/items/657c67a1809515589a7c">https://qiita.com/subaruf/items/657c67a1809515589a7c</a></li>
@@ -119,7 +119,7 @@
 <li>C言語のコンパイラの努力
 <ul>
 <li>実装依存ではあるが、<code>printf</code> の文字列リテラルをコンパイラが解析して Warning を出したりはしてくれるよう</li>
-<li>Hello, world を <code>printf</code> で実装するのはあるあるだが、gcc とかは最適化の過程で単なる標準出力である <code>puts</code> に変換されたりする（そんなところまで最適化されるのかと感動）</li>
+<li>Hello, world を <code>printf</code> で実装するのはあるあるだが、gcc とかでは最適化の過程で単なる標準出力である <code>puts</code> に変換されたりする</li>
 </ul>
 </li>
 </ul>
@@ -129,8 +129,12 @@
 <ul>
 <li>ブラウザ開発で SDK のバージョンをあげた後、特定の URL でクラッシュするようになった
 <ul>
-<li>調査していくと URL のデバッグ出力に使っていた関数の仕様が <code>printf</code> と同等になったことで、URL エンコーディングの % を format specifier と誤認していたことが発覚</li>
+<li>調査していくと URL のデバッグ出力に使っていた SDK の関数の仕様が <code>printf</code> と同等になったことで、URL エンコーディングの % を format specifier と誤認していたことが発覚</li>
 <li>出鱈目なメモリを読みに行きクラッシュという現象であった <img class="emoji" draggable="false" alt="😇" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/1f607.svg" data-marp-twemoji=""/></li>
+<li>エスケープも考えたが、以下の対応を思いついていい感じに直せた<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-c"><span class="hljs-comment">// sdkPrintf(url);</span>
+sdkPrintf(<span class="hljs-string">&quot;%s&quot;</span>, url);
+</code></pre>
+</li>
 </ul>
 </li>
 </ul>
@@ -168,9 +172,8 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 </code></pre>
 <ul>
 <li>同じ型をスライスとして受け取れる仕組み</li>
-<li>これにより <code>fmt.Printf</code> の引数の数が正しいかわかる</li>
-<li>しかし同じ型しか受け取れないが、 <code>fmt.Printf</code> の format specifier によって色々な型を使い分けたい</li>
-<li>どのように実現するのだろうか？</li>
+<li>C 言語のようなポインタ操作と違い <code>fmt.Printf</code> の引数の数が正しいかわかる</li>
+<li>同じ型しか受け取れないが、 <code>fmt.Printf</code> の format specifier によって色々な型を使い分けたい</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="16" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
@@ -218,7 +221,7 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 </code></pre>
 <ul>
 <li><code>println!</code> が C言語の <code>printf</code> と同等の機能を備えている</li>
-<li>printf 同様、可変長引数を利用できるのだが、 Rust 自体は可変長引数をサポートしていない</li>
+<li><code>printf</code> 同様、可変長引数を利用できるのだが、 Rust 自体は可変長引数をサポートしていない</li>
 <li>どう実現しているのか？</li>
 </ul>
 </section>
@@ -250,7 +253,7 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 <p>参考: <a href="https://note.com/webdrawer/n/n8f6d7a871424">https://note.com/webdrawer/n/n8f6d7a871424</a></p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="23" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
-<h3 id="%E3%83%9E%E3%82%AF%E3%83%AD%E5%B1%95%E9%96%8B%E5%BE%8C">マクロ展開後</h3>
+<h3 id="println-%E3%81%AE%E3%83%9E%E3%82%AF%E3%83%AD%E5%B1%95%E9%96%8B%E5%BE%8C">println! のマクロ展開後</h3>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-rust"><span class="hljs-keyword">let</span> <span class="hljs-variable">args</span> = <span class="hljs-built_in">format_args!</span>(<span class="hljs-string">&quot;Hello, {0} and {1}!\n&quot;</span>, name1, name2);
 
 <span class="hljs-comment">// =&gt; 以下のように展開される</span>
@@ -260,8 +263,8 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 );
 </code></pre>
 <ul>
-<li>println! の内部では format_args! という別のマクロが使われている</li>
-<li>このマクロは例えば &quot;Hello, {0} and {1}!&quot; のような文字列を指定されると、 [&quot;Hello,&quot;, &quot; and &quot;, &quot;!&quot;] のリストに変換される
+<li><code>println!</code> の内部では <code>format_args!</code> という別のマクロが使われている</li>
+<li>このマクロは例えば <code>&quot;Hello, {0} and {1}!&quot;</code> のような文字列を指定されると、 <code>[&quot;Hello,&quot;, &quot; and &quot;, &quot;!&quot;]</code> のリストに変換される
 <ul>
 <li>参考: <a href="https://ubnt-intrepid.netlify.app/rust-format-args/">https://ubnt-intrepid.netlify.app/rust-format-args/</a></li>
 </ul>
@@ -269,7 +272,7 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="24" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
-<h3 id="%E4%BB%96%E3%81%AE%E8%A8%80%E8%AA%9E%E3%81%AE%E3%83%9E%E3%82%AF%E3%83%AD%E3%81%A8%E3%81%AE%E9%81%95%E3%81%84">他の言語のマクロとの違い</h3>
+<h3 id="%E4%BB%96%E3%81%AE%E8%A8%80%E8%AA%9E%E3%81%AE%E3%83%9E%E3%82%AF%E3%83%AD%E3%81%A8%E3%81%AE%E6%AF%94%E8%BC%83">他の言語のマクロとの比較</h3>
 <ul>
 <li>C 言語にもマクロが存在するが、こちらは単なる文字列処理で AST として処理されない</li>
 <li>AST レベルでマクロの処理があるのは有名どころだと Lisp
@@ -295,9 +298,9 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 }
 </code></pre>
 <ul>
-<li>println! はマクロで展開する都合、文字列リテラルでないと使用できない</li>
+<li><code>println!</code> はマクロで展開する都合、文字列リテラルでないと使用できない(format_args! 使えばある程度はいけるかも？)</li>
 <li>あとマクロはコンパイルがとても遅くなる（それはそう）</li>
-<li>println! は実装を読まないでよいが、マクロを読むのは難しい</li>
+<li><code>println!</code> は実装を読まないでよいが、マクロを読むのは難しい</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-theme="gaia" lang="ja-JP" style="--theme:gaia;--marpit-advanced-background-split:50%;" data-marpit-advanced-background="background" data-marpit-advanced-background-split="left"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;ocaml.png&quot;);background-size:70%;"></figure></div></section></foreignObject><foreignObject width="50%" height="720" x="50%"><section id="26" data-theme="gaia" lang="ja-JP" style="--theme:gaia;--marpit-advanced-background-split:50%;" data-marpit-advanced-background="content" data-marpit-advanced-background-split="left">
@@ -319,9 +322,9 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="28" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
 <h3 id="ocaml-%E3%81%AE-format-%E5%9E%8B">OCaml の format 型</h3>
 <ul>
-<li>結論 OCaml において printf は特殊な扱いをされている</li>
-<li>%d といった文字列を string 型ではなく format 型という特殊な型に暗黙的に変換している</li>
-<li><code>(&quot;your name is %s\n&quot; : (_,_,_) format)</code> とかで format に変換すると <code>(string -&gt; 'a, 'b, 'a) format = &lt;abstr&gt;</code> のように %s から string を期待する関数として解釈される
+<li>結論 OCaml において <code>printf</code> のために format 型という特殊な型が用意されている</li>
+<li><code>%d</code> といった文字列を読み取って int が必要とコンパイル時に判断してくれる</li>
+<li><code>(&quot;%d\n&quot; : (_,_,_) format)</code> とかで format に変換すると <code>(int -&gt; 'a, 'b, 'a) format = &lt;abstr&gt;</code> のように %d から int を期待する関数として解釈される
 <ul>
 <li>参考: <a href="https://camlspotter.hatenablog.com/entry/20091102/1257099984">https://camlspotter.hatenablog.com/entry/20091102/1257099984</a></li>
 </ul>
@@ -329,25 +332,71 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="29" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
-<h3 id="ocaml-%E3%81%AE%E3%82%AB%E3%83%AA%E3%83%BC%E5%8C%96">OCaml のカリー化</h3>
+<h3 id="ocaml-%E3%81%AE-repl">OCaml の REPL</h3>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-ocaml"><span class="hljs-string">&quot;hello&quot;</span> ^ <span class="hljs-string">&quot; world&quot;</span>;;
+- : <span class="hljs-built_in">string</span> = <span class="hljs-string">&quot;hello world&quot;</span>
+</code></pre>
 <ul>
-<li>ちなみにデフォルトでカリー化されているため、引数が足りないということは起きえない</li>
+<li>ocaml でコードを実行すると、最終的な型と値を返してくれる</li>
 </ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="30" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
-<h3 id="ocaml-%E3%81%AE-printf-%E3%81%AF%E4%B8%87%E8%83%BD%E3%81%8B">OCaml の printf は万能か？</h3>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-rust">open Printf
-<span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = <span class="hljs-string">&quot;hello %s&quot;</span>;;
-<span class="hljs-keyword">let</span> () = printf s;; <span class="hljs-comment">// =&gt; コンパイルエラー</span>
+<h3 id="ocaml-%E3%81%AE-repl-%E3%81%A7-string-%E3%82%92-format-%E5%9E%8B%E3%81%AB%E3%82%AD%E3%83%A3%E3%82%B9%E3%83%88%E3%81%99%E3%82%8B">OCaml の REPL で string を format 型にキャストする</h3>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-ocaml">(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span> : (_,_,_) format);;
+- : (<span class="hljs-built_in">int</span> -&gt; <span class="hljs-built_in">int</span> -&gt; <span class="hljs-built_in">int</span> -&gt; <span class="hljs-symbol">&#x27;a</span>, <span class="hljs-symbol">&#x27;b</span>, <span class="hljs-symbol">&#x27;a</span>) format =
+<span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">Format</span>
+ (<span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">Int</span> (<span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">Int_d</span>,
+   <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">No_padding</span>,
+   <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">No_precision</span>,
+   <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">String_literal</span> (<span class="hljs-string">&quot; + &quot;</span>,
+    <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">Int</span> (<span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">Int_d</span>,
+     <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">No_padding</span>,
+     <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">No_precision</span>,
+     <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">String_literal</span> (<span class="hljs-string">&quot; = &quot;</span>,
+      <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">Int</span> (<span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">Int_d</span>,
+       <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">No_padding</span>,
+       <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">No_precision</span>,
+       <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">Char_literal</span> (<span class="hljs-string">&#x27;\n&#x27;</span>,
+        <span class="hljs-type">CamlinternalFormatBasics</span>.<span class="hljs-type">End_of_format</span>)))))),
+ <span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>)
 </code></pre>
-<ul>
-<li>Rust 同様、文字列リテラルしか受け付けない</li>
-</ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="31" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
-<h2 id="commonlisp">CommonLisp</h2>
+<h3 id="ocaml-%E3%81%AE%E3%82%AB%E3%83%AA%E3%83%BC%E5%8C%96">OCaml のカリー化</h3>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-ocaml"><span class="hljs-keyword">let</span> a = printf <span class="hljs-string">&quot;%d + %d = %d&quot;</span> <span class="hljs-number">1</span> <span class="hljs-number">1</span>;;
+<span class="hljs-keyword">val</span> a : <span class="hljs-built_in">int</span> -&gt; <span class="hljs-built_in">unit</span> = &lt;<span class="hljs-keyword">fun</span>&gt;
+</code></pre>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-ocaml"><span class="hljs-keyword">let</span> <span class="hljs-literal">()</span> = printf <span class="hljs-string">&quot;%d + %d = %d&quot;</span> <span class="hljs-number">1</span> <span class="hljs-number">1</span>;;
+<span class="hljs-type">Error</span>: <span class="hljs-type">This</span> expression has <span class="hljs-keyword">type</span> <span class="hljs-built_in">int</span> -&gt; <span class="hljs-built_in">unit</span> but an expression was expected <span class="hljs-keyword">of</span> <span class="hljs-keyword">type</span>
+  <span class="hljs-built_in">unit</span>
+</code></pre>
+<ul>
+<li>ちなみにデフォルトでカリー化されているため、引数が足りないということは起きえない</li>
+<li>ただ let とするときに () として何も値を持たない書き方をすることがほとんどなので、そこでコンパイルエラーになることがほとんどと思われる</li>
+</ul>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="32" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
+<h3 id="ocaml-%E3%81%AE-printf-%E3%81%AF%E4%B8%87%E8%83%BD%E3%81%8B">OCaml の printf は万能か？</h3>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-rust">open Printf
+<span class="hljs-keyword">let</span> <span class="hljs-variable">s</span> = (<span class="hljs-string">&quot;hello %s&quot;</span> : (_,_,_) format);;
+<span class="hljs-keyword">let</span> () = printf s;;
+</code></pre>
+<ul>
+<li>Rust と違い、format 型にすれば文字列リテラルでなくても一応いける</li>
+<li>が、 format 型自体特殊なので適用される条件は複雑っぽい</li>
+</ul>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="33" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
+<h3 id="ocaml-%E3%81%AE%E5%9E%8B%E6%8E%A8%E8%AB%96">OCaml の型推論</h3>
+<ul>
+<li>OCaml は型推論が強力なのでほとんど型を書かずに実装できる</li>
+<li>ゆえにカリー化で正しくない型が来たとしても、型推論に任せて予期せぬコンパイルエラーになったりでデバッグが難しい側面がある（カリー化便利なんだけどね）</li>
+</ul>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="34" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
+<h2 id="commonlisp">CommonLisp</h2>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="35" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
 <h3 id="commonlisp-%E3%81%AE-format">CommonLisp の format</h3>
 <ul>
 <li>Common Lisp には format 関数が printf としての役割を持っている</li>
@@ -355,7 +404,7 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 <li>型自体は面白いわけではないが、機能が多すぎる</li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="33" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="36" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
 <h3 id="%E3%81%AA%E3%82%93%E3%81%A8-loop-%E3%81%8C%E3%81%84%E3%81%91%E3%82%8B">なんと loop がいける</h3>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-lisp">(<span class="hljs-name">format</span> <span class="hljs-literal">t</span> <span class="hljs-string">&quot;~{~10,&#x27;0d~%~}&quot;</span> &#x27;(<span class="hljs-number">1</span> <span class="hljs-number">2</span> <span class="hljs-number">3</span> <span class="hljs-number">4</span> <span class="hljs-number">5</span>))
 </code></pre>
@@ -366,7 +415,7 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 0000000005
 </code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="34" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="37" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
 <h3 id="%E3%82%AF%E3%83%AF%E3%82%A4%E3%83%B3%E3%82%82%E3%81%84%E3%81%91%E3%81%A6%E3%81%97%E3%81%BE%E3%81%86">クワインもいけてしまう</h3>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-lisp">(<span class="hljs-name">format</span> <span class="hljs-literal">t</span> <span class="hljs-string">&quot;(format t ~s~:* ~s)&quot;</span> <span class="hljs-string">&quot;(format t ~s~:* ~s)&quot;</span>)
 </code></pre>
@@ -376,19 +425,19 @@ fmt.Printf(<span class="hljs-string">&quot;%d + %d = %d\n&quot;</span>, <span cl
 <li>参考: <a href="https://qiita.com/t-sin/items/d88887b595728b3a6b97">https://qiita.com/t-sin/items/d88887b595728b3a6b97</a></li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="35" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="38" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
 <h3 id="idris">Idris</h3>
 <ul>
 <li>参考: <a href="https://qiita.com/SekiT/items/d4692f6e47ace97b8f1e">https://qiita.com/SekiT/items/d4692f6e47ace97b8f1e</a></li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="36" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="39" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
 <h3 id="awk">awk</h3>
 <ul>
 <li>参考: <a href="https://qiita.com/ko1nksm/items/16ca4f4546c1ea8e97d7#awk-%E3%81%AE%E8%A8%80%E8%AA%9E%E4%BB%95%E6%A7%98">https://qiita.com/ko1nksm/items/16ca4f4546c1ea8e97d7#awk-の言語仕様</a></li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="37" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="40" data-theme="gaia" lang="ja-JP" style="--theme:gaia;">
 <h3 id="typescript">TypeScript</h3>
 <ul>
 <li>参考: <a href="https://www.hacklewayne.com/a-truly-strongly-typed-printf-in-typescript">https://www.hacklewayne.com/a-truly-strongly-typed-printf-in-typescript</a></li>
