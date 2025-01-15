@@ -12,7 +12,7 @@ theme: gaia
 ## この発表の経緯
 
 - 雑談をしていたときに C 言語の `printf` の仕様で盛り上がった
-- 言語ごとに `printf` 的なデバッグプリントに対するアプローチが違っていて、まとめたら結構面白いのでは？
+- 言語ごとに `printf` 的な文字列のフォーマット処理に対するアプローチが違っていて、まとめたら結構面白いのでは？
 - そういえば 7 つの言語 7 つの世界っていう本あったから、それ文字ってしまう？
 - という感じで、タイトル先行で資料を作成した
 
@@ -131,8 +131,14 @@ $ ./a.out
 ### C言語の printf にまつわる余談 2
 
 - ブラウザ開発で SDK のバージョンをあげた後、特定の URL でクラッシュするようになった
-  - 調査していくと URL のデバッグ出力に使っていた関数の仕様が `printf` と同等になったことで、URL エンコーディングの % を format specifier と誤認していたことが発覚
+  - 調査していくと URL のデバッグ出力に使っていた SDK の関数の仕様が `printf` と同等になったことで、URL エンコーディングの % を format specifier と誤認していたことが発覚
   - 出鱈目なメモリを読みに行きクラッシュという現象であった :innocent:
+  - エスケープも考えたが、以下の対応を思いついていい感じに直せた
+    ```c
+    sdkPrintf(url);
+    // =>
+    sdkPrintf("%s", url);
+    ```
 
 ---
 
@@ -173,9 +179,8 @@ func main() {
 ```
 
 - 同じ型をスライスとして受け取れる仕組み
-- これにより `fmt.Printf` の引数の数が正しいかわかる
-- しかし同じ型しか受け取れないが、 `fmt.Printf` の format specifier によって色々な型を使い分けたい
-- どのように実現するのだろうか？
+- C 言語のようなポインタ操作と違い `fmt.Printf` の引数の数が正しいかわかる
+- 同じ型しか受け取れないが、 `fmt.Printf` の format specifier によって色々な型を使い分けたい
 
 ---
 
@@ -226,7 +231,7 @@ println!("{} + {} = {}", 1, 1, 2); // => 1 + 1 = 2
 ```
 
 - `println!` が C言語の `printf` と同等の機能を備えている
-- printf 同様、可変長引数を利用できるのだが、 Rust 自体は可変長引数をサポートしていない
+- `printf` 同様、可変長引数を利用できるのだが、 Rust 自体は可変長引数をサポートしていない
 - どう実現しているのか？
 
 ---
@@ -258,7 +263,7 @@ fn main() {
 
 ---
 
-### マクロ展開後
+### println! のマクロ展開後
 
 ```rust
 let args = format_args!("Hello, {0} and {1}!\n", name1, name2);
@@ -270,13 +275,13 @@ let args = ::std::fmt::Arguments::new_v1(
 );
 ```
 
-- println! の内部では format_args! という別のマクロが使われている
-- このマクロは例えば "Hello, {0} and {1}!" のような文字列を指定されると、 ["Hello,", " and ", "!"] のリストに変換される
+- `println!` の内部では `format_args!` という別のマクロが使われている
+- このマクロは例えば `"Hello, {0} and {1}!"` のような文字列を指定されると、 `["Hello,", " and ", "!"]` のリストに変換される
     - 参考: https://ubnt-intrepid.netlify.app/rust-format-args/
 
 ---
 
-### 他の言語のマクロとの違い
+### 他の言語のマクロとの比較
 
 - C 言語にもマクロが存在するが、こちらは単なる文字列処理で AST として処理されない
 - AST レベルでマクロの処理があるのは有名どころだと Lisp
@@ -297,9 +302,9 @@ fn main() {
 }
 ```
 
-- println! はマクロで展開する都合、文字列リテラルでないと使用できない
+- `println!` はマクロで展開する都合、文字列リテラルでないと使用できない
 - あとマクロはコンパイルがとても遅くなる（それはそう）
-- println! は実装を読まないでよいが、マクロを読むのは難しい
+- `println!` は実装を読まないでよいが、マクロを読むのは難しい
 
 ---
 
@@ -327,16 +332,65 @@ let () = printf "%d + %d = %d\n" 1 1 2;;
 
 ### OCaml の format 型
 
-- 結論 OCaml において printf は特殊な扱いをされている
-- %d といった文字列を string 型ではなく format 型という特殊な型に暗黙的に変換している
-- `("your name is %s\n" : (_,_,_) format)` とかで format に変換すると `(string -> 'a, 'b, 'a) format = <abstr>` のように %s から string を期待する関数として解釈される
+- 結論 OCaml において `printf` のために format 型という特殊な型が用意されている
+- `%d` といった文字列を読み取って int が必要とコンパイル時に判断してくれる
+- `("%d\n" : (_,_,_) format)` とかで format に変換すると `(int -> 'a, 'b, 'a) format = <abstr>` のように %s から string を期待する関数として解釈される
     - 参考: https://camlspotter.hatenablog.com/entry/20091102/1257099984
+
+---
+
+### OCaml の REPL
+
+```ocaml
+"hello" ^ " world";;
+- : string = "hello world"
+```
+
+- ocaml でコードを実行すると、最終的な型と値を返してくれる
+
+---
+
+### OCaml の REPL で string を format 型にキャストする
+
+```ocaml
+("%d + %d = %d\n" : (_,_,_) format);;
+
+- : (int -> int -> int -> 'a, 'b, 'a) format =
+CamlinternalFormatBasics.Format
+ (CamlinternalFormatBasics.Int (CamlinternalFormatBasics.Int_d,
+   CamlinternalFormatBasics.No_padding,
+   CamlinternalFormatBasics.No_precision,
+   CamlinternalFormatBasics.String_literal (" + ",
+    CamlinternalFormatBasics.Int (CamlinternalFormatBasics.Int_d,
+     CamlinternalFormatBasics.No_padding,
+     CamlinternalFormatBasics.No_precision,
+     CamlinternalFormatBasics.String_literal (" = ",
+      CamlinternalFormatBasics.Int (CamlinternalFormatBasics.Int_d,
+       CamlinternalFormatBasics.No_padding,
+       CamlinternalFormatBasics.No_precision,
+       CamlinternalFormatBasics.Char_literal ('\n',
+        CamlinternalFormatBasics.End_of_format)))))),
+ "%d + %d = %d\n")
+```
+
 
 ---
 
 ### OCaml のカリー化
 
+```ocaml
+let a = printf "%d + %d = %d" 1 1;;
+val a : int -> unit = <fun>
+```
+
+```ocaml
+let () = printf "%d + %d = %d" 1 1;;
+Error: This expression has type int -> unit but an expression was expected of type
+  unit
+```
+
 - ちなみにデフォルトでカリー化されているため、引数が足りないということは起きえない
+- ただ let とするときに () として何も値を持たない書き方をすることがほとんどなので、そこでコンパイルエラーになることがほとんどと思われる
 
 ---
 
@@ -344,11 +398,14 @@ let () = printf "%d + %d = %d\n" 1 1 2;;
 
 ```rust
 open Printf
-let s = "hello %s";;
-let () = printf s;; // => コンパイルエラー
+let s = ("hello %s" : (_,_,_) format);;
+let () = printf s;;
 ```
 
-- Rust 同様、文字列リテラルしか受け付けない
+- Rust と違い、format 型にすれば文字列リテラルでなくても一応いけるが、 format 型自体特殊なので適用できる条件は複雑っぽい
+- カリー化によって地味に正しく実装できているのかコンパイル時に気がつきにくい
+  - OCaml は型推論が強力なのでほとんど型を書かずに実装できる
+  - それゆえにカリー化で正しくない型が来たとしても、型推論に任せて予期せぬコンパイルエラーになったりでデバッグが難しい側面がある（カリー化便利なんだけどね）
 
 ---
 
